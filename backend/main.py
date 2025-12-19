@@ -1,18 +1,21 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-import random, time, threading
+from simulation import Simulation
+import time, threading
 
 app = Flask(__name__)
 CORS(app)
 
+new_sim = Simulation(50, 50)
+
 @app.route("/")
 def get_grid():
-    return jsonify(world_grid)
+    return jsonify(new_sim.grid)
 
 def run_simulation():
-    global world_grid
+    global new_sim
     while True:
-        world_grid = tick(world_grid)
+        new_sim.tick()
         time.sleep(0.1)
 
 if __name__ == '__main__':
