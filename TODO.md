@@ -7,9 +7,9 @@
 
 ### Backend Refactor (OOP)
 
-- `[In Progress]` 1. Create the `simulation.py` file.
-- `[Pending]` 2. Define the `Simulation` class skeleton (`__init__`).
-- `[Pending]` 3. Move the grid update logic into a `Simulation` class method.
+- `[Done]` 1. Create the `simulation.py` file.
+- `[Done]` 2. Define the `Simulation` class skeleton (`__init__`).
+- `[In Progress]` 3. Move the grid update logic into a `Simulation` class method.
 - `[Pending]` 4. Integrate the `Simulation` class into `main.py`.
 - `[Pending]` 5. Connect the Flask API to the `Simulation` object.
 
