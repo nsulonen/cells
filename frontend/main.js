@@ -1,5 +1,5 @@
 const flask_server = 'http://127.0.0.1:5000/';
-const canvas = document.getElementById('vivarium-canvas');
+const canvas = document.getElementById('gridlife-canvas');
 const context = canvas.getContext('2d');
 
 fetch(flask_server)
