@@ -5,8 +5,8 @@ import random, time, threading
 app = Flask(__name__)
 CORS(app)
 
-width = 200
-height = 200
+width = 100
+height = 100
 
 world_grid = [[random.choice([0, 1]) for _ in range(width)] for _ in range(height)]
 
