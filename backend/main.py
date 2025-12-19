@@ -22,14 +22,21 @@ def tick(current_grid):
     for row in range(height):
         for col in range(width):
             live_neighbours = 0
+
             for n_row in range(row - 1, row + 2):
                 for n_col in range(col - 1, col + 2):
-                    if n_row < 0 or n_row >= height or n_col < 0 or n_col >= width:
+                    if n_row < 0 or n_row >= height or
+                       n_col < 0 or n_col >= width:
                         continue
                     if n_row == row and n_col == col:
                         continue
                     elif current_grid[n_row][n_col] == 1:
                         live_neighbours += 1
+
+            state = current_grid[row][col]
+            if (state == 1 and live_neighbours in [2, 3]) or
+               (state == 0 and live_neighbours == 3):
+                new_grid[row][col] = 1                    
 
 if __name__ == '__main__':
     app.run(debug=True)
