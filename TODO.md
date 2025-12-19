@@ -4,6 +4,7 @@
 
 - `[Done]` Add a glow effect to living cells
 - `[Done]` Animate cell transitions
+- `[Done]` Implement a new, modern color palette and theme
 
 ### Backend
 
