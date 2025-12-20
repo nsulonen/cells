@@ -15,9 +15,11 @@ const canvas = document.getElementById('gridlife-canvas');
 const context = canvas.getContext('2d');
 
 const FADE_DURATION = 500;
-const C_ALIVE_HEX = '#4FD1C5';
-const C_ALIVE_RGB = '79, 209, 197';
+const C_YOUNG_RGB = [106, 103, 78];
+const C_OLD_RGB = [139, 69, 19];
+const C_DECAYING_HEX = '#8B4512';
 
+let MAX_AGE = 0;
 let isInitialized = false;
 let currentGrid = [];
 let previousGrid = [];
@@ -30,18 +32,39 @@ function drawGrid() {
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
+  let maxAgeFound = 0;
+  
   for (let r = 0; r < rowCount; r++) {
     for (let c = 0; c < colCount; c++) {
       const cell = currentGrid[r][c];
-      if (cell.isAlive) {
-        context.fillStyle = C_ALIVE_HEX;
-        context.shadowColor = C_ALIVE_HEX;
-        context.shadowBlur = 10;
+
+      if (cell.state === "ALIVE") {
+        maxAgeFound = Math.max(maxAgeFound, cell.age);
+        
+        const ageRatio = Math.min(cell.age, MAX_AGE) / MAX_AGE;
+        const currentColor = lerpColor(C_YOUNG_RGB, C_OLD_RGB, ageRatio);
+        const blur = 10 * (1 - ageRatio);
+       
+        context.fillStyle = currentColor;
+        context.shadowColor = currentColor;
+        context.shadowBlur = blur;
         context.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
         context.shadowBlur = 0;
+        
+      } else if (cell.state === "DECAYING") {
+        context.fillStyle = C_DECAYING_HEX;
+        context.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
       }
     }
   }
+  console.log(`Max age on grid this frame: ${maxAgeFound}`);
+}
+
+function lerpColor(color1, color2, ratio) {
+  const r = Math.round(color1[0] + (color2[0] - color1[0]) * ratio);
+  const g = Math.round(color1[1] + (color2[1] - color1[1]) * ratio);
+  const b = Math.round(color1[2] + (color2[2] - color1[2]) * ratio);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function fillGrid(width, height) {
@@ -65,6 +88,7 @@ function update() {
 
         currentGrid = fillGrid(data.width, data.height);
         previousGrid = fillGrid(data.width, data.height);
+        MAX_AGE = data.max_age;
 
         isInitialized = true;
       }

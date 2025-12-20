@@ -9,14 +9,14 @@ class Simulation:
     def __init__(self, width, height):
         self.width = width;
         self.height = height;
-        self.MAX_AGE = 200
-        self.DECAY_DURATION = 15
+        self.MAX_AGE = 75
+        self.DECAY_DURATION = 25
 
         self.grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
 
         for row in self.grid:
             for cell in row:
-                if random.random() < 0.15:
+                if random.random() < 0.35:
                     cell.state = "ALIVE";
 
     def tick(self):
@@ -57,7 +57,8 @@ class Simulation:
                         new_cell.age = current_cell.age + 1
                         
                 elif current_cell.state == "EMPTY":
-                    if alive_neighbors == 2 and decaying_neighbors >= 1:
+                    if (alive_neighbors == 3) or \
+                       (alive_neighbors == 2 and decaying_neighbors >= 1):
                         new_cell.state = "ALIVE"
                     
                 elif current_cell.state == "DECAYING":
