@@ -1,3 +1,15 @@
+class Cell {
+  constructor(isAlive, generation) {
+    this.isAlive = isAlive;
+    this.generation = generation;
+    this.age = 0;
+  }
+
+  incrementAge() {
+    this.age += 1;
+  }
+}
+
 const flask_server = 'http://127.0.0.1:5000/';
 const canvas = document.getElementById('gridlife-canvas');
 const context = canvas.getContext('2d');
