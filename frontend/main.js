@@ -69,6 +69,18 @@ function drawGrid(current, previous) {
   }
 }
 
+function fillGrid(width, height) {
+  const grid = []
+  for (let r = 0; r < height; r++) {
+    const row = []
+    for (let c = 0; c < width; c++) {
+      row.push(new Cell(false, 0));
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
 function update() {
   fetch(flask_server)
     .then(response => response.json())
