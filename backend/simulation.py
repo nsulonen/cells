@@ -9,7 +9,7 @@ class Simulation:
     def __init__(self, width, height):
         self.width = width;
         self.height = height;
-        self.MAX_AGE = 75
+        self.MAX_AGE = 150
         self.DECAY_DURATION = 25
 
         self.grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
@@ -57,9 +57,12 @@ class Simulation:
                         new_cell.age = current_cell.age + 1
                         
                 elif current_cell.state == "EMPTY":
-                    if (alive_neighbors == 3) or \
-                       (alive_neighbors == 2 and decaying_neighbors >= 1):
+                    if alive_neighbors == 3:
                         new_cell.state = "ALIVE"
+                    if decaying_neighbors > 0:
+                        birth_chance = 0.15 * decaying_neighbors
+                        if random.random() < birth_chance:
+                            new_cell.state = "ALIVE"
                     
                 elif current_cell.state == "DECAYING":
                     if current_cell.age > self.DECAY_DURATION:
