@@ -14,12 +14,11 @@ class Simulation:
                 live_neighbours = 0
                 for n_row in range(row - 1, row + 2):
                     for n_col in range(col - 1, col + 2):
-                        if n_row < 0 or n_row >= self.height or \
-                           n_col < 0 or n_col >= self.width:
-                            continue
+                        wrapped_row = n_row % self.height
+                        wrapped_col = n_col % self.width
                         if n_row == row and n_col == col:
                             continue
-                        elif self.grid[n_row][n_col] == 1:
+                        elif self.grid[wrapped_row][wrapped_col] == 1:
                             live_neighbours += 1
 
                 state = self.grid[row][col]
