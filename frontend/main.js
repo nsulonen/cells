@@ -32,17 +32,14 @@ function drawGrid() {
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
-  let maxAgeFound = 0;
-  
   for (let r = 0; r < rowCount; r++) {
     for (let c = 0; c < colCount; c++) {
       const cell = currentGrid[r][c];
 
-      if (cell.state === "ALIVE") {
-        maxAgeFound = Math.max(maxAgeFound, cell.age);
+      if (cell.state === "ALIVE" || cell.state == "REBORN") {
         
         const ageRatio = Math.min(cell.age, MAX_AGE) / MAX_AGE;
-        const currentColor = lerpColor(C_YOUNG_RGB, C_OLD_RGB, ageRatio);
+        const currentColor = lerpColor(cell.color, C_OLD_RGB, ageRatio);
         const blur = 10 * (1 - ageRatio);
        
         context.fillStyle = currentColor;
@@ -57,7 +54,6 @@ function drawGrid() {
       }
     }
   }
-  console.log(`Max age on grid this frame: ${maxAgeFound}`);
 }
 
 function lerpColor(color1, color2, ratio) {
@@ -96,24 +92,12 @@ function update() {
 
       for (let r = 0; r < data.height; r++) {
         for (let c = 0; c < data.width; c++) {
-          const serverState = data.grid[r][c];
+          const serverCell = data.grid[r][c];
           const clientCell = currentGrid[r][c];
 
-          const wasAlive = clientCell.isAlive;
-          const isNowAlive = (serverState === "ALIVE");
-
-          clientCell.isAlive = isNowAlive;
-          clientCell.state = serverState;
-
-          if (isNowAlive && wasAlive) {
-            clientCell.incrementAge();
-          }
-          else if (isNowAlive && !wasAlive) {
-            clientCell.age = 0;
-          }
-          else if (!isNowAlive && wasAlive) {
-            clientCell.age = 0;
-          }
+          clientCell.state = serverCell.state
+          clientCell.age = serverCell.age
+          clientCell.color = serverCell.color
         }
       }
     });

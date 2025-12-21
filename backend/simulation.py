@@ -1,14 +1,15 @@
 import random
 
 class Cell:
-    def __init__(self):
-        self.state = "EMPTY";
-        self.age = 0;
+    def __init__(self, color=[106, 103, 78]):
+        self.state = "EMPTY"
+        self.age = 0
+        self.color = color
 
 class Simulation:
     def __init__(self, width, height):
-        self.width = width;
-        self.height = height;
+        self.width = width
+        self.height = height
         self.MAX_AGE = 150
         self.DECAY_DURATION = 25
 
@@ -17,7 +18,7 @@ class Simulation:
         for row in self.grid:
             for cell in row:
                 if random.random() < 0.35:
-                    cell.state = "ALIVE";
+                    cell.state = "ALIVE"
 
     def tick(self):
         new_grid = [[Cell() for _ in range(self.width)] for _ in range(self.height)]
@@ -37,7 +38,7 @@ class Simulation:
                      nc = (col + dc) % self.width
 
                      neighbor_cell = self.grid[nr][nc]
-                     if neighbor_cell.state == "ALIVE":
+                     if neighbor_cell.state in ["ALIVE", "REBORN"]:
                          alive_neighbors += 1
                          
                      elif neighbor_cell.state == "DECAYING":
@@ -46,24 +47,35 @@ class Simulation:
                 current_cell = self.grid[row][col]
                 new_cell = new_grid[row][col]
 
-                if current_cell.state == "ALIVE":
+                if current_cell.state in ["ALIVE", "REBORN"]:
                     if current_cell.age > self.MAX_AGE:
                         new_cell.state = "DECAYING"
                         new_cell.age = 0                        
                     elif alive_neighbors < 2 or alive_neighbors > 3:
                         new_cell.state = "EMPTY"
                     else:
-                        new_cell.state = "ALIVE"
+                        new_cell.state = current_cell.state
+                        new_cell.color = current_cell.color
                         new_cell.age = current_cell.age + 1
                         
                 elif current_cell.state == "EMPTY":
                     if alive_neighbors == 3:
                         new_cell.state = "ALIVE"
-                    if decaying_neighbors > 0:
+                        for dr in range(-1, 2):
+                            for dc in range(-1, 2):
+                                if dr == 0 and dc == 0: continue
+
+                                parent = self.grid[(row + dr) % self.height][(col + dc) % self.width]
+                                if parent.state in ["ALIVE", "REBORN"]:
+                                    new_cell.color = parent.color
+                                    break
+                                
+                    elif decaying_neighbors > 0:
                         birth_chance = 0.15 * decaying_neighbors
                         if random.random() < birth_chance:
-                            new_cell.state = "ALIVE"
-                    
+                            new_cell.state = "REBORN"
+                            new_cell.color = [random.randint(50, 200) for _ in range(3)]
+                                                
                 elif current_cell.state == "DECAYING":
                     if current_cell.age > self.DECAY_DURATION:
                         new_cell.state = "EMPTY"
@@ -74,4 +86,15 @@ class Simulation:
         self.grid = new_grid
 
     def get_cell_states(self):
-        return [[self.grid[r][c].state for c in range(self.width)] for r in range(self.height)]
+        grid_data = []
+        for r in range(self.height):
+            row_data = []
+            for c in range(self.width):
+                cell = self.grid[r][c]
+                row_data.append({
+                                    "state": cell.state,
+                                    "age": cell.age,
+                                    "color": cell.color
+                                })
+            grid_data.append(row_data)
+        return grid_data
