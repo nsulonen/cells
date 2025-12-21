@@ -1,4 +1,4 @@
-import { drawGrid, resizeCanvas, cellSize } from "./renderer.js";
+import { drawGrid, resizeCanvas, cellSize, zoomAt } from "./renderer.js";
 import { init, tick, getSimulationState, shiftGrid, WIDTH, HEIGHT, MAX_AGE } from "./simulation.js";
 
 const canvas = document.getElementById("gridlife-canvas");
@@ -60,6 +60,14 @@ canvas.addEventListener("mouseleave", onPanEnd);
 canvas.addEventListener("touchcancel", onPanEnd);
 canvas.addEventListener("mousemove", onPanMove);
 canvas.addEventListener("touchmove", onPanMove, { passive: false });
+canvas.addEventListener("wheel", onWheelZoom, { passive: false });
+
+function onWheelZoom(e) {
+  e.preventDefault();
+  const scale = 1 - e.deltaY * 0.005;
+
+  zoomAt(scale, e.clientX, e.clientY);
+}
 
 // --- Game loop ---
 function gameLoop() {

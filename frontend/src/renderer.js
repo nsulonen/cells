@@ -25,6 +25,17 @@ export function resizeCanvas(gridWidth, gridHeight) {
   yOffset = Math.floor((canvas.height - gridRenderHeight) / 2);
 }
 
+export function zoomAt(scale, screenX, screenY) {
+  const gridX = (screenX - xOffset) / cellSize;
+  const gridY = (screenY - yOffset) / cellSize;
+
+  const oldCellSize = cellSize;
+  cellSize = Math.max(1, Math.min(oldCellSize * scale, 100));
+
+  xOffset = screenX - gridX * cellSize;
+  yOffset = screenY - gridY * cellSize;
+}
+
 function lerpColor(color1, color2, ratio) {
   const r = Math.round(color1[0] + (color2[0] - color1[0]) * ratio);
   const g = Math.round(color1[1] + (color2[1] - color1[1]) * ratio);
