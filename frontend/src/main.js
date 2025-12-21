@@ -16,6 +16,8 @@ function getEventCoords(e) {
 }
 
 function onPanStart(e) {
+  e.preventDefault();
+  
   isPanning = true;
   const coords = getEventCoords(e);
   lastPanX = coords.clientX;
