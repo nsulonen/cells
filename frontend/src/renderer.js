@@ -7,7 +7,7 @@ const ZOOM_SPEED = 0.15;
 
 export let cellSize = 10;
 let targetCellSize = 10;
-let minCellSize = 1;
+let coverCellSize = 10;
 
 let xOffset = 0;
 let yOffset = 0;
@@ -18,11 +18,7 @@ export function resizeCanvas(gridWidth, gridHeight) {
   // Calculate cell size to fit grid while maintaining aspect ratio
   const coverScaleX = window.innerWidth / gridWidth;
   const coverScaleY = window.innerHeight / gridHeight;
-  const coverCellSize = Math.ceil(Math.max(coverScaleX, coverScaleY)); // Use floor for crips pixels
-
-  const fitScaleX = window.innerWidth / gridWidth;
-  const fitScaleY = window.innerHeight / gridHeight;
-  minCellSize = Math.floor(Math.min(fitScaleX, fitScaleY));
+  coverCellSize = Math.ceil(Math.max(coverScaleX, coverScaleY)); // Use floor for crips pixels
 
   // Set the canvas drawing buffer size
   canvas.width = window.innerWidth;
@@ -39,7 +35,7 @@ export function resizeCanvas(gridWidth, gridHeight) {
 }
 
 export function zoomAt(scale, screenX, screenY) {
-  targetCellSize = Math.max(minCellSize, Math.min(cellSize * scale, 100));
+  targetCellSize = Math.max(coverCellSize, Math.min(cellSize * scale, 100));
   zoomCenterX = screenX;
   zoomCenterY = screenY;
 }
