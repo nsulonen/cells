@@ -50,7 +50,7 @@ function onPanMove(e) {
     accumulatedDeltaY -= shiftY * cellSize;
 
     shiftGrid(-shiftX, -shiftY);
-    adjustOffsets(shiftX * cellSize, shiftY * cellSize);
+    // adjustOffsets(shiftX * cellSize, shiftY * cellSize);
   }
 }
 
