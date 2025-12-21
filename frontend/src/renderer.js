@@ -55,6 +55,11 @@ export function updateZoomAnimation() {
   yOffset = zoomCenterY - gridY * cellSize;
 }
 
+export function adjustOffsets(dx, dy) {
+  xOffset += dx;
+  yOffset += dy;
+}
+
 function lerpColor(color1, color2, ratio) {
   const r = Math.round(color1[0] + (color2[0] - color1[0]) * ratio);
   const g = Math.round(color1[1] + (color2[1] - color1[1]) * ratio);

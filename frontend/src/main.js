@@ -1,4 +1,4 @@
-import { drawGrid, resizeCanvas, cellSize, zoomAt, updateZoomAnimation } from "./renderer.js";
+import { drawGrid, resizeCanvas, cellSize, zoomAt, updateZoomAnimation, adjustOffsets } from "./renderer.js";
 import { init, tick, getSimulationState, shiftGrid, WIDTH, HEIGHT, MAX_AGE } from "./simulation.js";
 
 const canvas = document.getElementById("gridlife-canvas");
@@ -48,6 +48,7 @@ function onPanMove(e) {
     accumulatedDeltaY -= shiftY * cellSize;
 
     shiftGrid(-shiftX, -shiftY);
+    adjustOffsets(shiftX * cellSize, shiftY * cellSize);
   }
 }
 
