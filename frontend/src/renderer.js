@@ -3,20 +3,33 @@ const context = canvas.getContext('2d');
 
 const C_OLD_RGB = [139, 69, 19];
 const C_DECAYING_HEX = '#8B4512';
+const ZOOM_SPEED = 0.15;
 
 export let cellSize = 10;
+let targetCellSize = 10;
+let minCellSize = 1;
+
 let xOffset = 0;
 let yOffset = 0;
+let zoomCenterX = 0;
+let zoomCenterY = 0;
 
 export function resizeCanvas(gridWidth, gridHeight) {
   // Calculate cell size to fit grid while maintaining aspect ratio
-  const scaleX = window.innerWidth / gridWidth;
-  const scaleY = window.innerHeight / gridHeight;
-  cellSize = Math.ceil(Math.max(scaleX, scaleY)); // Use floor for crips pixels
+  const coverScaleX = window.innerWidth / gridWidth;
+  const coverScaleY = window.innerHeight / gridHeight;
+  const coverCellSize = Math.ceil(Math.max(coverScaleX, coverScaleY)); // Use floor for crips pixels
+
+  const fitScaleX = window.innerWidth / gridWidth;
+  const fitScaleY = window.innerHeight / gridHeight;
+  minCellSize = Math.floor(Math.min(fitScaleX, fitScaleY));
 
   // Set the canvas drawing buffer size
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+
+  cellSize = coverCellSize;
+  targetCellSize = cellSize;
 
   // Calculate offsets to center the grid on the canvas
   const gridRenderWidth = gridWidth * cellSize;
@@ -26,14 +39,24 @@ export function resizeCanvas(gridWidth, gridHeight) {
 }
 
 export function zoomAt(scale, screenX, screenY) {
-  const gridX = (screenX - xOffset) / cellSize;
-  const gridY = (screenY - yOffset) / cellSize;
+  targetCellSize = Math.max(minCellSize, Math.min(cellSize * scale, 100));
+  zoomCenterX = screenX;
+  zoomCenterY = screenY;
+}
 
-  const oldCellSize = cellSize;
-  cellSize = Math.max(1, Math.min(oldCellSize * scale, 100));
+export function updateZoomAnimation() {
+  if (Math.abs(cellSize - targetCellSize) < 0.01) {
+    cellSize = targetCellSize;
+    return;
+  }
 
-  xOffset = screenX - gridX * cellSize;
-  yOffset = screenY - gridY * cellSize;
+  const gridX = (zoomCenterX - xOffset) / cellSize;
+  const gridY = (zoomCenterY - yOffset) / cellSize;
+
+  cellSize += (targetCellSize - cellSize) * ZOOM_SPEED;
+
+  xOffset = zoomCenterX - gridX * cellSize;
+  yOffset = zoomCenterY - gridY * cellSize;
 }
 
 function lerpColor(color1, color2, ratio) {
@@ -56,6 +79,10 @@ export function drawGrid(grid, maxAge) {
       const cell = grid[r][c];
       const x = xOffset + c * cellSize;
       const y = yOffset + r * cellSize;
+
+      if (x + cellSize < 0 || x > canvas.width || y + cellSize < 0 || y > canvas.height) {
+        continue;
+      }
 
       if (cell.state === "ALIVE" || cell.state == "REBORN") {
         const ageRatio = Math.min(cell.age, maxAge) / maxAge;

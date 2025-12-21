@@ -1,4 +1,4 @@
-import { drawGrid, resizeCanvas, cellSize, zoomAt } from "./renderer.js";
+import { drawGrid, resizeCanvas, cellSize, zoomAt, updateZoomAnimation } from "./renderer.js";
 import { init, tick, getSimulationState, shiftGrid, WIDTH, HEIGHT, MAX_AGE } from "./simulation.js";
 
 const canvas = document.getElementById("gridlife-canvas");
@@ -71,6 +71,8 @@ function onWheelZoom(e) {
 
 // --- Game loop ---
 function gameLoop() {
+  updateZoomAnimation();
+  
   const { grid } = getSimulationState();
   if (grid.length > 0) {
     drawGrid(grid, MAX_AGE);
