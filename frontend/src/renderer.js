@@ -21,8 +21,10 @@ export function resizeCanvas(gridWidth, gridHeight) {
   coverCellSize = Math.ceil(Math.max(coverScaleX, coverScaleY)); // Use floor for crips pixels
 
   // Set the canvas drawing buffer size
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * ratio;
+  canvas.height = window.innerHeight * ratio;
+  context.scale(ratio, ratio);
 
   cellSize = coverCellSize;
   targetCellSize = cellSize;
@@ -30,8 +32,8 @@ export function resizeCanvas(gridWidth, gridHeight) {
   // Calculate offsets to center the grid on the canvas
   const gridRenderWidth = gridWidth * cellSize;
   const gridRenderHeight = gridHeight * cellSize;
-  xOffset = Math.floor((canvas.width - gridRenderWidth) / 2);
-  yOffset = Math.floor((canvas.height - gridRenderHeight) / 2);
+  xOffset = Math.floor((window.innerWidth - gridRenderWidth) / 2);
+  yOffset = Math.floor((window.innerHeight - gridRenderHeight) / 2);
 }
 
 export function zoomAt(scale, screenX, screenY) {
@@ -63,17 +65,17 @@ export function clampOffsets(gridWidth, gridHeight) {
     const gridRenderHeight = gridHeight * cellSize;
 
     let minX = 0;
-    let maxX = canvas.width - gridRenderWidth;
+    let maxX = window.innerWidth - gridRenderWidth;
     let minY = 0;
-    let maxY = canvas.height - gridRenderHeight;
+    let maxY = window.innerHeight - gridRenderHeight;
 
-    if (gridRenderWidth > canvas.width) {
-        minX = canvas.width - gridRenderWidth;
+    if (gridRenderWidth > window.innerWidth) {
+        minX = window.innerWidth - gridRenderWidth;
         maxX = 0;
     }
 
-    if (gridRenderHeight > canvas.height) {
-        minY = canvas.height - gridRenderHeight;
+    if (gridRenderHeight > window.innerHeight) {
+        minY = window.innerHeight - gridRenderHeight;
         maxY = 0;
     }
     
@@ -95,16 +97,16 @@ function lerpColor(color1, color2, ratio) {
 
 export function drawGrid(grid, maxAge) {
   context.fillStyle = "#111"; // Background color
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillRect(0, 0, window.innerWidth, window.innerHeight);
   
   const rowCount = grid.length;
   if (rowCount === 0) return;
   const colCount = grid[0].length;
 
   const startCol = Math.max(0, Math.floor(-xOffset / cellSize));
-  const endCol = Math.min(colCount, Math.ceil((canvas.width - xOffset) / cellSize));
+  const endCol = Math.min(colCount, Math.ceil((window.innerWidth - xOffset) / cellSize));
   const startRow = Math.max(0, Math.floor(-yOffset / cellSize));
-  const endRow = Math.min(rowCount, Math.ceil((canvas.height - yOffset) / cellSize));
+  const endRow = Math.min(rowCount, Math.ceil((window.innerHeight - yOffset) / cellSize));
 
   for (let r = startRow; r < endRow; r++) {
     for (let c = startCol; c < endCol; c++) {
