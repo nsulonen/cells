@@ -12,3 +12,8 @@
 - `[Pending]` Add UI controls (e.g., Pause/Play, Reset).
 - `[Pending]` Give 'REBORN' cells unique traits (e.g., resilience).
 - `[Pending]` Deploy the application to a web server (e.g., GitHub Pages).
+
+## Optimization
+- `[Done]` Optimize `drawGrid` to only render visible cells.
+- `[Pending]` Optimize `tick` to only process active cells and their neighbors.
+- `[Pending]` Use a double-buffering technique in `tick` to reduce memory allocations.
