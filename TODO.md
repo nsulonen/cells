@@ -15,5 +15,5 @@
 
 ## Optimization
 - `[Done]` Optimize `drawGrid` to only render visible cells.
-- `[Pending]` Optimize `tick` to only process active cells and their neighbors.
-- `[Pending]` Use a double-buffering technique in `tick` to reduce memory allocations.
+- `[Done]` Optimize `tick` to only process active cells and their neighbors.
+- `[Done]` Use a double-buffering technique in `tick` to reduce memory allocations.

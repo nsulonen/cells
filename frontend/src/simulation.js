@@ -7,14 +7,15 @@ export class Cell {
 }
 
 // --- Simulation parameters ---
-export const WIDTH = 250;
-export const HEIGHT = 250;
+export const WIDTH = 500;
+export const HEIGHT = 500;
 export const MAX_AGE = 150;
 const DECAY_DURATION = 25;
 const INITIAL_DENSITY = 0.35;
 
 // --- Module-level state ---
 let grid = [];
+let activeCells = new Set();
 let isInitialized = false;
 
 // --- Private helper functions ---
@@ -27,10 +28,12 @@ function createEmptyGrid() {
 // Initialize the simulation with random grid
 export function init() {
   grid = createEmptyGrid();
+  activeCells.clear();
   for (let row = 0; row < HEIGHT; row++) {
     for (let col = 0; col < WIDTH; col++) {
       if (Math.random() < INITIAL_DENSITY) {
         grid[row][col].state = "ALIVE";
+        activeCells.add(`${row},${col}`);
       }
     }
   }
@@ -40,76 +43,110 @@ export function init() {
 
 // Core simulation logic
 export function tick() {
-  if (!isInitialized) return;
+  if (!isInitialized || activeCells.size === 0) return;
 
-  const newGrid = createEmptyGrid();
-
-  for (let row = 0; row < HEIGHT; row++) {
-    for (let col = 0; col < WIDTH; col++) {
-
-      let aliveNeighbors = 0;
-      let decayingNeighbors = 0;
-      let parentColor = null;
-
-      // Count neighbors
-      for (let drow = -1; drow <= 1; drow++) {
-        for (let dcol = -1; dcol <= 1; dcol++) {
-          if (drow === 0 && dcol === 0) continue;
-
-          const nrow = (row + drow + HEIGHT) % HEIGHT;
-          const ncol = (col + dcol + WIDTH) % WIDTH;
-
-          const neighbor = grid[nrow][ncol];
-          if (neighbor.state === "ALIVE" || neighbor.state === "REBORN") {
-            aliveNeighbors++;
-            if (!parentColor) {
-              parentColor = neighbor.color;
-            }
-          } else if (neighbor.state === "DECAYING") {
-            decayingNeighbors++;
-          }
-        }
-      }
-
-      const currentCell = grid[row][col];
-      const newCell = newGrid[row][col];
-
-      if (currentCell.state === "ALIVE" || currentCell.state === "REBORN") {
-        if (currentCell.age > MAX_AGE) {
-          newCell.state = "DECAYING";
-        } else if (aliveNeighbors < 2 || aliveNeighbors > 3) {
-          newCell.state = "EMPTY";
-        } else {
-          newCell.state = currentCell.state;
-          newCell.color = currentCell.color;
-          newCell.age = currentCell.age + 1;
-        }
-      } else if (currentCell.state === "EMPTY") {
-        if (aliveNeighbors === 3) {
-          newCell.state = "ALIVE";
-          newCell.color = parentColor || [106, 103, 78]; 
-        } else if (decayingNeighbors > 0) {
-          const birthChance = 0.15 * decayingNeighbors;
-          if (Math.random() < birthChance) {
-            newCell.state = "REBORN";
-            newCell.color = Array.from({ length: 3 }, () => Math.random() * 150 + 50);
-          }
-        }
-      } else if (currentCell.state === "DECAYING") {
-        if (currentCell.age > DECAY_DURATION) {
-          newCell.state = "EMPTY";
-        } else {
-          newCell.state = "DECAYING";
-          newCell.age = currentCell.age + 1;
-        }
+  const cellsToEvaluate = new Set();
+  for (const cell of activeCells) {
+    const [row, col] = cell.split(',').map(Number);
+    for (let drow = -1; drow <= 1; drow++) {
+      for (let dcol = -1; dcol <= 1; dcol++) {
+        const nrow = (row + drow + HEIGHT) % HEIGHT;
+        const ncol = (col + dcol + WIDTH) % WIDTH;
+        cellsToEvaluate.add(`${nrow},${ncol}`);
       }
     }
   }
-  grid = newGrid;
+
+  const changes = [];
+
+  for (const cell of cellsToEvaluate) {
+    const [row, col] = cell.split(',').map(Number);
+    
+    let aliveNeighbors = 0;
+    let decayingNeighbors = 0;
+    let parentColor = null;
+
+    // Count neighbors
+    for (let drow = -1; drow <= 1; drow++) {
+      for (let dcol = -1; dcol <= 1; dcol++) {
+        if (drow === 0 && dcol === 0) continue;
+
+        const nrow = (row + drow + HEIGHT) % HEIGHT;
+        const ncol = (col + dcol + WIDTH) % WIDTH;
+
+        const neighbor = grid[nrow][ncol];
+        if (neighbor.state === "ALIVE" || neighbor.state === "REBORN") {
+          aliveNeighbors++;
+          if (!parentColor) {
+            parentColor = neighbor.color;
+          }
+        } else if (neighbor.state === "DECAYING") {
+          decayingNeighbors++;
+        }
+      }
+    }
+
+    const currentCell = grid[row][col];
+    const newCell = new Cell(currentCell.state, currentCell.color, currentCell.age);
+
+    if (currentCell.state === "ALIVE" || currentCell.state === "REBORN") {
+      if (currentCell.age > MAX_AGE) {
+        newCell.state = "DECAYING";
+        newCell.age = 0; // Reset age for decay
+      } else if (aliveNeighbors < 2 || aliveNeighbors > 3) {
+        newCell.state = "EMPTY";
+        newCell.age = 0;
+      } else {
+        newCell.age++;
+      }
+    } else if (currentCell.state === "EMPTY") {
+      if (aliveNeighbors === 3) {
+        newCell.state = "ALIVE";
+        newCell.color = parentColor || [106, 103, 78];
+        newCell.age = 0;
+      } else if (decayingNeighbors > 0) {
+        const birthChance = 0.15 * decayingNeighbors;
+        if (Math.random() < birthChance) {
+          newCell.state = "REBORN";
+          newCell.color = Array.from({ length: 3 }, () => Math.random() * 150 + 50);
+          newCell.age = 0;
+        }
+      }
+    } else if (currentCell.state === "DECAYING") {
+      if (currentCell.age > DECAY_DURATION) {
+        newCell.state = "EMPTY";
+        newCell.age = 0;
+      } else {
+        newCell.age++;
+      }
+    }
+    
+    if (newCell.state !== currentCell.state || newCell.age !== currentCell.age) {
+        changes.push({row, col, cell: newCell});
+    }
+  }
+
+  const newActiveCells = new Set();
+  for(const change of changes) {
+      grid[change.row][change.col] = change.cell;
+      if(change.cell.state !== 'EMPTY') {
+          newActiveCells.add(`${change.row},${change.col}`);
+      }
+  }
+  activeCells = newActiveCells;
 }
 
 export function shiftGrid(dx, dy) {
   if (!isInitialized || (dx === 0 && dy === 0)) return;
+
+  const newActiveCells = new Set();
+  for (const cell of activeCells) {
+    const [row, col] = cell.split(',').map(Number);
+    const newRow = (row - dy + HEIGHT) % HEIGHT;
+    const newCol = (col - dx + WIDTH) % WIDTH;
+    newActiveCells.add(`${newRow},${newCol}`);
+  }
+  activeCells = newActiveCells;
 
   if (dy < 0) {
     for (let i = 0; i < -dy; i++) {
