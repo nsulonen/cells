@@ -10,63 +10,81 @@ let lastPanX = 0;
 let lastPanY = 0;
 let panAccumulatorX = 0;
 let panAccumulatorY = 0;
-
-function getEventCoords(e) {
-  return e.touches ? e.touches[0] : e;
-}
+let initialPinchDistance = 0;
+let activePointers = [];
 
 function onPanStart(e) {
   e.preventDefault();
-  
-  isPanning = true;
-  const coords = getEventCoords(e);
-  lastPanX = coords.clientX;
-  lastPanY = coords.clientY;
-  canvas.style.cursor = "grabbing";
-  panAccumulatorX = 0;
-  panAccumulatorY = 0;
+  activePointers.push(e);
+  if (activePointers.length === 2) {
+    const p1 = activePointers[0];
+    const p2 = activePointers[1];
+
+    initialPinchDistance = Math.sqrt((p2.clientX - p1.clientX) ** 2 + (p2.clientY - p1.clientY) ** 2);
+    
+  } else {
+    isPanning = true;
+    lastPanX = e.clientX;
+    lastPanY = e.clientY;
+    canvas.style.cursor = "grabbing";
+    panAccumulatorX = 0;
+    panAccumulatorY = 0;
+  }
 }
 
-function onPanEnd() {
+function onPanEnd(e) {
   isPanning = false;
   canvas.style.cursor = "grab";
+  activePointers = activePointers.filter(pointer => pointer.pointerId !== e.pointerId);
 }
 
 function onPanMove(e) {
-  if (!isPanning) return;
   e.preventDefault();
+  if (activePointers.length === 2) {
+    for (let i = 0; i < activePointers.length; i++) {
+      if (activePointers[i].pointerId === e.pointerId) {
+        activePointers[i] = e;
+      }
+    }
+    const p1 = activePointers[0];
+    const p2 = activePointers[1];
+    const newPinchDistance = Math.sqrt((p2.clientX - p1.clientX) ** 2 + (p2.clientY - p1.clientY) ** 2);
+    const scale = newPinchDistance / initialPinchDistance;
+    const midPointX = (p1.clientX + p2.clientX) / 2;
+    const midPointY = (p1.clientY + p2.clientY) / 2;
 
-  const coords = getEventCoords(e);
-  const dx = coords.clientX - lastPanX;
-  const dy = coords.clientY - lastPanY;
-  lastPanX = coords.clientX;
-  lastPanY = coords.clientY;
+    zoomAt(scale, midPointX, midPointY);
+    initialPinchDistance = newPinchDistance;
+    
+  } else if (isPanning) {
+    const dx = e.clientX - lastPanX;
+    const dy = e.clientY - lastPanY;
+    lastPanX = e.clientX;
+    lastPanY = e.clientY;
 
-  adjustOffsets(dx, dy);
+    adjustOffsets(dx, dy);
 
-  panAccumulatorX += dx;
-  panAccumulatorY += dy;
+    panAccumulatorX += dx;
+    panAccumulatorY += dy;
 
-  const shiftX = Math.trunc(panAccumulatorX / cellSize);
-  const shiftY = Math.trunc(panAccumulatorY / cellSize);
+    const shiftX = Math.trunc(panAccumulatorX / cellSize);
+    const shiftY = Math.trunc(panAccumulatorY / cellSize);
 
-  if (shiftX !== 0 || shiftY !== 0) {
-    shiftGrid(-shiftX, -shiftY);
-    panAccumulatorX -= shiftX * cellSize;
-    panAccumulatorY -= shiftY * cellSize;
-    adjustOffsets(-shiftX * cellSize, -shiftY * cellSize);
+    if (shiftX !== 0 || shiftY !== 0) {
+      shiftGrid(-shiftX, -shiftY);
+      panAccumulatorX -= shiftX * cellSize;
+      panAccumulatorY -= shiftY * cellSize;
+      adjustOffsets(-shiftX * cellSize, -shiftY * cellSize);
+    }
   }
 }
 
 canvas.style.cursor = "grab";
-canvas.addEventListener("mousedown", onPanStart);
-canvas.addEventListener("touchstart", onPanStart, { passive: true });
-canvas.addEventListener("mouseup", onPanEnd);
-canvas.addEventListener("touchend", onPanEnd);
-canvas.addEventListener("mouseleave", onPanEnd);
-canvas.addEventListener("touchcancel", onPanEnd);
-canvas.addEventListener("mousemove", onPanMove);
-canvas.addEventListener("touchmove", onPanMove, { passive: false });
+canvas.addEventListener("pointerdown", onPanStart);
+canvas.addEventListener("pointerup", onPanEnd);
+canvas.addEventListener("pointermove", onPanMove);
+canvas.addEventListener("pointerleave", onPanEnd);
+canvas.addEventListener("pointercancel", onPanEnd);
 canvas.addEventListener("wheel", onWheelZoom, { passive: false });
 
 function onWheelZoom(e) {
