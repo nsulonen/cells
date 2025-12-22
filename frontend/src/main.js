@@ -101,15 +101,20 @@ function gameLoop() {
   }
 
   if (pinchMoved) {
-    const p1 = activePointers[0];
-    const p2 = activePointers[1];
-    const newPinchDistance = Math.sqrt((p2.clientX - p1.clientX) ** 2 + (p2.clientY - p1.clientY) ** 2);
-    const scale = newPinchDistance / initialPinchDistance;
-    const midPointX = (p1.clientX + p2.clientX) / 2;
-    const midPointY = (p1.clientY + p2.clientY) / 2;
+    if (activePointers.length === 2) {
+      const p1 = activePointers[0];
+      const p2 = activePointers[1];
+      const newPinchDistance = Math.sqrt((p2.clientX - p1.clientX) ** 2 + (p2.clientY - p1.clientY) ** 2);
 
-    zoomAt(scale, midPointX, midPointY);
-    initialPinchDistance = newPinchDistance; 
+      if (initialPinchDistance > 0) {
+        const scale = newPinchDistance / initialPinchDistance;
+        const midPointX = (p1.clientX + p2.clientX) / 2;
+        const midPointY = (p1.clientY + p2.clientY) / 2;
+
+        zoomAt(scale, midPointX, midPointY);
+        initialPinchDistance = newPinchDistance;
+      }
+    }
     pinchMoved = false;
   }
   requestAnimationFrame(gameLoop);
