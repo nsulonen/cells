@@ -7,8 +7,8 @@ export class Cell {
 }
 
 // --- Simulation parameters ---
-export const WIDTH = 500;
-export const HEIGHT = 500;
+export const WIDTH = 150;
+export const HEIGHT = 150;
 export const MAX_AGE = 150;
 const DECAY_DURATION = 25;
 const INITIAL_DENSITY = 0.35;
